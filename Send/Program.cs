@@ -10,9 +10,15 @@ namespace Send
 {
     class Program
     {
+        
         public static void Main()
         {
-            var factory = new ConnectionFactory() { HostName = "dev-fabiano-server.eastus.cloudapp.azure.com", UserName = "backup", Password = "backup" };
+            var factory = new ConnectionFactory()
+            {
+                HostName = "dev-fabiano-server.eastus.cloudapp.azure.com",
+                UserName = "backup",
+                Password = "backup"
+            };
             using (var connection = factory.CreateConnection())
             using (var channel = connection.CreateModel())
             {
@@ -22,20 +28,25 @@ namespace Send
                                      autoDelete: false,
                                      arguments: null);
 
-                var consumer = new EventingBasicConsumer(channel);
-                consumer.Received += (model, ea) =>
+                while (true)
                 {
-                    var body = ea.Body;
-                    var message = Encoding.UTF8.GetString(body);
-                    Console.WriteLine(" [x] Received {0}", message);
-                };
-                channel.BasicConsume(queue: "hello",
-                                     autoAck: true,
-                                     consumer: consumer);
 
-                Console.WriteLine(" Press [enter] to exit.");
-                Console.ReadLine();
+                    Console.Write("Digite uma mensagem: ");
+                    string message = Console.ReadLine();
+
+                    var body = Encoding.UTF8.GetBytes(message);
+
+                    channel.BasicPublish(exchange: "",
+                                         routingKey: "hello",
+                                         basicProperties: null,
+                                         body: body);
+
+                }
+
+
             }
+
+
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using RabbitMQ.Client;
+using RabbitMQ.Client.Events;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,7 +12,14 @@ namespace Receive
     {
         public static void Main()
         {
-            var factory = new ConnectionFactory() { HostName = "dev-fabiano-server.eastus.cloudapp.azure.com", UserName = "backup", Password = "backup" };
+            var factory = new ConnectionFactory()
+            {
+                HostName = "dev-fabiano-server.eastus.cloudapp.azure.com",
+                UserName = "backup",
+                Password = "backup"
+            };
+
+
             using (var connection = factory.CreateConnection())
             using (var channel = connection.CreateModel())
             {
@@ -21,18 +29,20 @@ namespace Receive
                                      autoDelete: false,
                                      arguments: null);
 
-                string message = "Hello World!";
-                var body = Encoding.UTF8.GetBytes(message);
+                var consumer = new EventingBasicConsumer(channel);
+                consumer.Received += (model, ea) =>
+                {
+                    var body = ea.Body;
+                    var message = Encoding.UTF8.GetString(body);
+                    Console.WriteLine(" [x] Mensagem recebida: {0}", message);
+                };
+                channel.BasicConsume(queue: "hello",
+                                     autoAck: true,
+                                     consumer: consumer);
 
-                channel.BasicPublish(exchange: "",
-                                     routingKey: "hello",
-                                     basicProperties: null,
-                                     body: body);
-                Console.WriteLine(" [x] Sent {0}", message);
+                Console.WriteLine(" Pressione [enter] para sair.");
+                Console.ReadLine();
             }
-
-            Console.WriteLine(" Press [enter] to exit.");
-            Console.ReadLine();
         }
     }
 }
