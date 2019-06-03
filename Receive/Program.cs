@@ -14,9 +14,9 @@ namespace Receive
         {
             var factory = new ConnectionFactory()
             {
-                HostName = "dev-fabiano-server.eastus.cloudapp.azure.com",
-                UserName = "backup",
-                Password = "backup"
+                HostName = "host",
+                UserName = "",
+                Password = ""
             };
 
 
